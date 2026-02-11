@@ -3,18 +3,21 @@
 #ifndef KETOANAPP_COMMON_H
 #define KETOANAPP_COMMON_H
 
-// Windows headers
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <commctrl.h>
-
-// Standard C++ headers
+// Standard C++ headers FIRST (before Windows)
 #include <string>
 #include <memory>
 #include <vector>
 #include <map>
 #include <stdexcept>
 #include <sstream>
+
+// Windows headers AFTER C++ STL
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX  // Prevent Windows min/max macros from conflicting with STL
+#endif
+#include <windows.h>
+#include <commctrl.h>
 
 // Application version
 #define KETOANAPP_VERSION_MAJOR 1
