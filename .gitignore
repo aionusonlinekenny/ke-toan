@@ -154,3 +154,4 @@ docs/.doctrees/
 Doxyfile.bak
 html/
 latex/
+test_compile.cpp
