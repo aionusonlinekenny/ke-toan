@@ -44,7 +44,7 @@ namespace KeToanApp {
 
         std::string ToString() const {
             char buffer[32];
-            sprintf_s(buffer, "%02d/%02d/%04d", day, month, year);
+            sprintf_s(buffer, sizeof(buffer), "%02d/%02d/%04d", day, month, year);
             return buffer;
         }
 
@@ -61,7 +61,7 @@ namespace KeToanApp {
 
         std::string ToString(int precision = 2) const {
             char buffer[64];
-            sprintf_s(buffer, "%.*f", precision, value);
+            sprintf_s(buffer, sizeof(buffer), "%.*f", precision, value);
             return buffer;
         }
     };
