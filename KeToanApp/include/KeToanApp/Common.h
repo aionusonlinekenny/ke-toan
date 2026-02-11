@@ -16,6 +16,10 @@
 #ifndef NOMINMAX
 #define NOMINMAX  // Prevent Windows min/max macros from conflicting with STL
 #endif
+
+// Force compilation error if old cached version is used
+#define KETOANAPP_HEADER_VERSION_2026_02_11_FIXED
+
 #include <windows.h>
 #include <commctrl.h>
 
