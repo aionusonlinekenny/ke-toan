@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "../Utils/Logger.h"
+#include <filesystem>
 
 namespace KeToanApp {
 
@@ -110,6 +111,13 @@ namespace KeToanApp {
 
     bool Application::InitializeDatabase() {
         try {
+            // Create database directory if it doesn't exist
+            std::filesystem::path dbPath(config_.GetSettings().databasePath);
+            if (dbPath.has_parent_path()) {
+                std::filesystem::create_directories(dbPath.parent_path());
+                Logger::Info("Database directory created: %s", dbPath.parent_path().string().c_str());
+            }
+
             database_ = std::make_unique<DatabaseManager>(config_.GetSettings());
 
             if (!database_->Connect()) {
@@ -122,6 +130,10 @@ namespace KeToanApp {
         }
         catch (const DatabaseException& e) {
             Logger::Error("Database initialization error: %s", e.what());
+            return false;
+        }
+        catch (const std::exception& e) {
+            Logger::Error("Database initialization system error: %s", e.what());
             return false;
         }
     }

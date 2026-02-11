@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <filesystem>
 
 namespace KeToanApp {
 
@@ -20,14 +21,32 @@ namespace KeToanApp {
             return;
         }
 
-        logFile_.open(filename, std::ios::out | std::ios::app);
-        if (!logFile_.is_open()) {
-            std::cerr << "Failed to open log file: " << filename << std::endl;
-            return;
-        }
+        try {
+            // Create parent directory if it doesn't exist
+            std::filesystem::path logPath(filename);
+            if (logPath.has_parent_path()) {
+                std::filesystem::create_directories(logPath.parent_path());
+            }
 
-        initialized_ = true;
-        Info("Logger initialized");
+            logFile_.open(filename, std::ios::out | std::ios::app);
+            if (!logFile_.is_open()) {
+                std::cerr << "Failed to open log file: " << filename << std::endl;
+                // Enable console output as fallback
+                consoleOutput_ = true;
+                initialized_ = true;
+                return;
+            }
+
+            initialized_ = true;
+            consoleOutput_ = true; // Enable console output for debugging
+            Info("Logger initialized: %s", filename.c_str());
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Logger initialization error: " << e.what() << std::endl;
+            // Enable console output as fallback
+            consoleOutput_ = true;
+            initialized_ = true;
+        }
     }
 
     void Logger::Shutdown() {

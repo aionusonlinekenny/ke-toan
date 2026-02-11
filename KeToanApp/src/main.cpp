@@ -2,6 +2,7 @@
 #include "Core/Application.h"
 #include "Utils/Logger.h"
 #include <exception>
+#include <system_error>
 
 // Windows entry point
 int WINAPI WinMain(
@@ -44,6 +45,20 @@ int WINAPI WinMain(
         KeToanApp::Logger::Shutdown();
 
         return exitCode;
+    }
+    catch (const std::system_error& e) {
+        KeToanApp::Logger::Error("System error [%d]: %s", e.code().value(), e.what());
+
+        std::wstring errorMsg = L"Lỗi hệ thống:\n";
+        int wideSize = MultiByteToWideChar(CP_UTF8, 0, e.what(), -1, nullptr, 0);
+        if (wideSize > 0) {
+            std::wstring wideStr(wideSize, 0);
+            MultiByteToWideChar(CP_UTF8, 0, e.what(), -1, &wideStr[0], wideSize);
+            errorMsg += wideStr;
+        }
+
+        MessageBoxW(nullptr, errorMsg.c_str(), L"Lỗi Hệ Thống", MB_ICONERROR);
+        return 1;
     }
     catch (const std::exception& e) {
         KeToanApp::Logger::Error("Unhandled exception: %s", e.what());
