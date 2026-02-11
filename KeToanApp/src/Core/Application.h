@@ -27,7 +27,7 @@ namespace KeToanApp {
         void Shutdown();
 
         // Getters
-        HINSTANCE GetInstance() const { return hInstance_; }
+        HINSTANCE GetHInstance() const { return hInstance_; }
         Config& GetConfig() { return config_; }
         DatabaseManager& GetDatabase() { return *database_; }
         MainWindow* GetMainWindow() { return mainWindow_.get(); }
