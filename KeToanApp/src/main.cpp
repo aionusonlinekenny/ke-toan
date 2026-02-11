@@ -15,6 +15,14 @@ int WINAPI WinMain(
     KETOAN_UNUSED(lpCmdLine);
 
     try {
+        // Allocate console for debugging
+        #ifdef _DEBUG
+        AllocConsole();
+        FILE* pConsole;
+        freopen_s(&pConsole, "CONOUT$", "w", stdout);
+        freopen_s(&pConsole, "CONOUT$", "w", stderr);
+        #endif
+
         // Initialize logger
         KeToanApp::Logger::Initialize("ketoan.log");
         KeToanApp::Logger::Info("========================================");
@@ -43,6 +51,10 @@ int WINAPI WinMain(
 
         KeToanApp::Logger::Info("Application exiting with code: %d", exitCode);
         KeToanApp::Logger::Shutdown();
+
+        #ifdef _DEBUG
+        FreeConsole();
+        #endif
 
         return exitCode;
     }
