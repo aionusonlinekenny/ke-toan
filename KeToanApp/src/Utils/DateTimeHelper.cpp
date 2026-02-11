@@ -13,10 +13,6 @@ namespace DateTimeHelper {
         return Date(timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year + 1900);
     }
 
-    Date Date::Today() {
-        return DateTimeHelper::Today();
-    }
-
     std::string CurrentDateString(const std::string& format) {
         KETOAN_UNUSED(format);
         return Today().ToString();
@@ -30,7 +26,7 @@ namespace DateTimeHelper {
         localtime_s(&timeinfo, &now);
 
         char buffer[32];
-        sprintf_s(buffer, "%02d:%02d:%02d",
+        sprintf_s(buffer, sizeof(buffer), "%02d:%02d:%02d",
             timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
         return buffer;
     }
@@ -167,4 +163,10 @@ namespace DateTimeHelper {
     }
 
 } // namespace DateTimeHelper
+
+// Implementation of Date::Today() static method
+Date Date::Today() {
+    return DateTimeHelper::Today();
+}
+
 } // namespace KeToanApp

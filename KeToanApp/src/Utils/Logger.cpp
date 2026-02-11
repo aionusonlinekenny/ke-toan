@@ -3,6 +3,7 @@
 #include <cstdarg>
 #include <iostream>
 #include <iomanip>
+#include <chrono>
 
 namespace KeToanApp {
 
@@ -134,10 +135,10 @@ namespace KeToanApp {
         localtime_s(&tm, &time);
 
         char buffer[32];
-        sprintf_s(buffer, "%04d-%02d-%02d %02d:%02d:%02d.%03lld",
+        sprintf_s(buffer, sizeof(buffer), "%04d-%02d-%02d %02d:%02d:%02d.%03lld",
             tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
             tm.tm_hour, tm.tm_min, tm.tm_sec,
-            ms.count());
+            static_cast<long long>(ms.count()));
 
         return buffer;
     }
