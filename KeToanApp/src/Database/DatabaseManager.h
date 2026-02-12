@@ -43,6 +43,7 @@ namespace KeToanApp {
         bool CreateKhoTables();
         bool CreateKeToanTables();
         bool CreateSystemTables();
+        bool InsertSampleData();
 
         // Helper methods
         std::string GetSchemaVersion();
