@@ -90,6 +90,11 @@ namespace KeToanApp {
     void ProductGroupForm::OnCreate() {
         InitializeControls();
         LoadProductGroups();
+
+        // Force initial layout
+        RECT rect;
+        GetClientRect(hwnd_, &rect);
+        OnSize(rect.right - rect.left, rect.bottom - rect.top);
     }
 
     void ProductGroupForm::OnDestroy() {

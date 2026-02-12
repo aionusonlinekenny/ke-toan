@@ -90,6 +90,11 @@ namespace KeToanApp {
     void WarehouseForm::OnCreate() {
         InitializeControls();
         LoadWarehouses();
+
+        // Force initial layout
+        RECT rect;
+        GetClientRect(hwnd_, &rect);
+        OnSize(rect.right - rect.left, rect.bottom - rect.top);
     }
 
     void WarehouseForm::OnDestroy() {

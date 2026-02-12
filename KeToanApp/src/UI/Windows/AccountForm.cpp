@@ -90,6 +90,11 @@ namespace KeToanApp {
     void AccountForm::OnCreate() {
         InitializeControls();
         LoadAccounts();
+
+        // Force initial layout
+        RECT rect;
+        GetClientRect(hwnd_, &rect);
+        OnSize(rect.right - rect.left, rect.bottom - rect.top);
     }
 
     void AccountForm::OnDestroy() {

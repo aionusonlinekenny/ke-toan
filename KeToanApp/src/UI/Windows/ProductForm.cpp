@@ -182,6 +182,11 @@ namespace KeToanApp {
         int y = rcParent.top + (rcParent.bottom - rcParent.top - (rcWindow.bottom - rcWindow.top)) / 2;
         SetWindowPos(hwnd_, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 
+        // Force initial layout
+        RECT rect;
+        GetClientRect(hwnd_, &rect);
+        OnSize(rect.right - rect.left, rect.bottom - rect.top);
+
         Logger::Info("ProductForm initialized successfully");
     }
 

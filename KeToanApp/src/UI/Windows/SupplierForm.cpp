@@ -90,6 +90,11 @@ namespace KeToanApp {
     void SupplierForm::OnCreate() {
         InitializeControls();
         LoadSuppliers();
+
+        // Force initial layout
+        RECT rect;
+        GetClientRect(hwnd_, &rect);
+        OnSize(rect.right - rect.left, rect.bottom - rect.top);
     }
 
     void SupplierForm::OnDestroy() {
