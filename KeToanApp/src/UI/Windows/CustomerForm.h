@@ -58,6 +58,7 @@ namespace KeToanApp {
         // UI creation
         void CreateControls();
         void CreateListView();
+        void SetupListViewColumns();
 
         // Data management
         void LoadCustomers();
