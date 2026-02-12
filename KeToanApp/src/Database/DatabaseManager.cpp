@@ -28,16 +28,19 @@ namespace KeToanApp {
                 return false;
             }
 
+            // Set connected flag immediately after successful connection
+            connected_ = true;
+
             // Check and create schema if needed
             if (!CheckSchema()) {
                 Logger::Info("Database schema not found, creating...");
                 if (!CreateTables()) {
                     Logger::Error("Failed to create database schema");
+                    connected_ = false;
                     return false;
                 }
             }
 
-            connected_ = true;
             Logger::Info("Database connected successfully");
             return true;
         }
