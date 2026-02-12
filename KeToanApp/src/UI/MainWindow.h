@@ -22,6 +22,7 @@ namespace KeToanApp {
         HWND hwnd_;
         HMENU hMenu_;
         HWND hStatusBar_;
+        HFONT hFont_;
 
         static const wchar_t* CLASS_NAME;
 

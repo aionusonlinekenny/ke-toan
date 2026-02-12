@@ -10,11 +10,16 @@ namespace KeToanApp {
         , hwnd_(nullptr)
         , hMenu_(nullptr)
         , hStatusBar_(nullptr)
+        , hFont_(nullptr)
     {
     }
 
     MainWindow::~MainWindow() {
         Close();
+        if (hFont_) {
+            DeleteObject(hFont_);
+            hFont_ = nullptr;
+        }
     }
 
     bool MainWindow::Create() {
@@ -59,6 +64,24 @@ namespace KeToanApp {
             Logger::Error("Failed to create window, error: %d", err);
             return false;
         }
+
+        // Create Vietnamese-compatible font
+        hFont_ = CreateFontW(
+            -16,                        // Height (negative = character height)
+            0,                          // Width (0 = default)
+            0,                          // Escapement
+            0,                          // Orientation
+            FW_NORMAL,                  // Weight
+            FALSE,                      // Italic
+            FALSE,                      // Underline
+            FALSE,                      // Strikeout
+            DEFAULT_CHARSET,            // Character set
+            OUT_DEFAULT_PRECIS,         // Output precision
+            CLIP_DEFAULT_PRECIS,        // Clipping precision
+            CLEARTYPE_QUALITY,          // Quality (ClearType for better rendering)
+            DEFAULT_PITCH | FF_DONTCARE,// Pitch and family
+            L"Segoe UI"                 // Font name (supports Vietnamese)
+        );
 
         // Create UI components
         if (!CreateMenuBar()) {
@@ -273,6 +296,11 @@ namespace KeToanApp {
             DWORD err = GetLastError();
             Logger::Error("Failed to create status bar, error: %d", err);
             return false;
+        }
+
+        // Set Vietnamese font for status bar
+        if (hFont_) {
+            SendMessageW(hStatusBar_, WM_SETFONT, (WPARAM)hFont_, TRUE);
         }
 
         // Set status bar text
