@@ -1,49 +1,79 @@
+// Force UTF-8 encoding for Vietnamese text
+#pragma execution_character_set("utf-8")
+
 #include "AccountForm.h"
+#include "../../Utils/Logger.h"
 #include <windowsx.h>
 #include <commctrl.h>
 
 namespace KeToanApp {
 
-    AccountForm::AccountForm(HWND parent)
-        : parent_(parent)
+    const wchar_t* AccountForm::CLASS_NAME = L"KeToanAppAccountForm";
+
+    AccountForm::AccountForm(HWND hParent)
+        : hInstance_(GetModuleHandle(nullptr))
+        , hParent_(hParent)
         , hwnd_(nullptr)
-        , listView_(nullptr)
-        , btnAdd_(nullptr)
-        , btnEdit_(nullptr)
-        , btnDelete_(nullptr)
-        , btnClose_(nullptr) {
+        , hFont_(nullptr)
+        , selectedIndex_(-1)
+    {
+        hListView_ = nullptr;
+        hBtnThem_ = nullptr;
+        hBtnSua_ = nullptr;
+        hBtnXoa_ = nullptr;
+        hBtnDong_ = nullptr;
     }
 
     AccountForm::~AccountForm() {
-        if (hwnd_) {
-            DestroyWindow(hwnd_);
+        Close();
+        if (hFont_) {
+            DeleteObject(hFont_);
+            hFont_ = nullptr;
         }
     }
 
     bool AccountForm::Create() {
-        WNDCLASSEXW wc = {};
+        // Register window class
+        WNDCLASSEXW wc = { 0 };
         wc.cbSize = sizeof(WNDCLASSEXW);
+        wc.style = CS_HREDRAW | CS_VREDRAW;
         wc.lpfnWndProc = WindowProc;
-        wc.hInstance = GetModuleHandle(nullptr);
-        wc.lpszClassName = L"KeToanAccountForm";
+        wc.hInstance = hInstance_;
+        wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-        wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+        wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+        wc.lpszClassName = CLASS_NAME;
+        wc.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
 
-        RegisterClassExW(&wc);
+        if (!RegisterClassExW(&wc)) {
+            DWORD err = GetLastError();
+            if (err != ERROR_CLASS_ALREADY_EXISTS) {
+                Logger::Error("Failed to register AccountForm window class, error: %d", err);
+                return false;
+            }
+        }
 
+        // Create window
         hwnd_ = CreateWindowExW(
             WS_EX_DLGMODALFRAME,
-            L"KeToanAccountForm",
-            L"Danh mục Tài khoản Kế toán",
-            WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT, CW_USEDEFAULT, 900, 500,
-            parent_,
+            CLASS_NAME,
+            L"Danh mục Tài khoản kế toán",
+            WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+            CW_USEDEFAULT, CW_USEDEFAULT,
+            900, 600,
+            hParent_,
             nullptr,
-            GetModuleHandle(nullptr),
+            hInstance_,
             this
         );
 
-        return hwnd_ != nullptr;
+        if (!hwnd_) {
+            DWORD err = GetLastError();
+            Logger::Error("Failed to create AccountForm window, error: %d", err);
+            return false;
+        }
+
+        return true;
     }
 
     void AccountForm::Show() {
@@ -53,199 +83,317 @@ namespace KeToanApp {
         }
     }
 
+    void AccountForm::Close() {
+        if (hwnd_) {
+            DestroyWindow(hwnd_);
+            hwnd_ = nullptr;
+        }
+    }
+
     LRESULT CALLBACK AccountForm::WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         AccountForm* form = nullptr;
 
         if (msg == WM_NCCREATE) {
-            auto cs = reinterpret_cast<CREATESTRUCTW*>(lParam);
-            form = static_cast<AccountForm*>(cs->lpCreateParams);
-            SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(form));
+            CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
+            form = reinterpret_cast<AccountForm*>(pCreate->lpCreateParams);
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(form));
+            form->hwnd_ = hwnd;
         } else {
-            form = reinterpret_cast<AccountForm*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+            form = reinterpret_cast<AccountForm*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
         }
 
         if (form) {
-            switch (msg) {
-                case WM_CREATE:
-                    form->OnCreate();
-                    return 0;
-                case WM_DESTROY:
-                    form->OnDestroy();
-                    return 0;
-                case WM_SIZE:
-                    form->OnSize(LOWORD(lParam), HIWORD(lParam));
-                    return 0;
-                case WM_COMMAND:
-                    form->OnCommand(wParam, lParam);
-                    return 0;
-                case WM_NOTIFY:
-                    form->OnNotify(reinterpret_cast<NMHDR*>(lParam));
-                    return 0;
-            }
+            return form->HandleMessage(hwnd, msg, wParam, lParam);
         }
 
-        return DefWindowProcW(hwnd, msg, wParam, lParam);
+        return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+
+    LRESULT AccountForm::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+        switch (msg) {
+            case WM_CREATE:
+                OnCreate();
+                return 0;
+
+            case WM_COMMAND:
+                OnCommand(wParam, lParam);
+                return 0;
+
+            case WM_NOTIFY:
+                OnNotify(lParam);
+                return 0;
+
+            case WM_SIZE:
+                OnSize(wParam, lParam);
+                return 0;
+
+            case WM_DESTROY:
+                hwnd_ = nullptr;
+                return 0;
+
+            case WM_CLOSE:
+                OnClose();
+                return 0;
+
+            default:
+                return DefWindowProc(hwnd, msg, wParam, lParam);
+        }
     }
 
     void AccountForm::OnCreate() {
-        InitializeControls();
+        Logger::Info("AccountForm initializing...");
+
+        // Create font for Vietnamese text
+        hFont_ = CreateFontW(
+            -16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+            DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+            CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+            L"Segoe UI"
+        );
+
+        // Create all controls
+        CreateControls();
+        CreateListView();
+
+        // Load sample data
         LoadAccounts();
+        RefreshListView();
 
-        // Force initial layout - temporarily commented due to VS build issue
-        // RECT rect;
-        // GetClientRect(hwnd_, &rect);
-        // OnSize(rect.right - rect.left, rect.bottom - rect.top);
+        // Center window on parent
+        RECT rcParent, rcWindow;
+        GetWindowRect(hParent_, &rcParent);
+        GetWindowRect(hwnd_, &rcWindow);
+
+        int x = rcParent.left + (rcParent.right - rcParent.left - (rcWindow.right - rcWindow.left)) / 2;
+        int y = rcParent.top + (rcParent.bottom - rcParent.top - (rcWindow.bottom - rcWindow.top)) / 2;
+        SetWindowPos(hwnd_, nullptr, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+        Logger::Info("AccountForm initialized successfully");
     }
 
-    void AccountForm::OnDestroy() {
-        hwnd_ = nullptr;
+    void AccountForm::CreateControls() {
+        HINSTANCE hInst = GetModuleHandle(nullptr);
+        int yPos = 10;
+
+        // === TOOLBAR BUTTONS ===
+        hBtnThem_ = CreateWindowW(L"BUTTON", L"Thêm",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+            10, yPos, 80, 30, hwnd_, (HMENU)IDC_BTN_THEM, hInst, nullptr);
+
+        hBtnSua_ = CreateWindowW(L"BUTTON", L"Sửa",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+            100, yPos, 80, 30, hwnd_, (HMENU)IDC_BTN_SUA, hInst, nullptr);
+
+        hBtnXoa_ = CreateWindowW(L"BUTTON", L"Xóa",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+            190, yPos, 80, 30, hwnd_, (HMENU)IDC_BTN_XOA, hInst, nullptr);
+
+        hBtnDong_ = CreateWindowW(L"BUTTON", L"Đóng",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+            280, yPos, 80, 30, hwnd_, (HMENU)IDC_BTN_DONG, hInst, nullptr);
+
+        // Apply font to all controls
+        if (hFont_) {
+            EnumChildWindows(hwnd_, [](HWND hwnd, LPARAM lParam) -> BOOL {
+                SendMessage(hwnd, WM_SETFONT, (WPARAM)lParam, TRUE);
+                return TRUE;
+            }, (LPARAM)hFont_);
+        }
     }
 
-    void AccountForm::OnSize(int width, int height) {
-        if (listView_) {
-            SetWindowPos(listView_, nullptr, 10, 10, width - 20, height - 60, SWP_NOZORDER);
+    void AccountForm::CreateListView() {
+        HINSTANCE hInst = GetModuleHandle(nullptr);
+
+        // Create ListView below buttons
+        hListView_ = CreateWindowExW(
+            0,
+            WC_LISTVIEWW,
+            L"",
+            WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SINGLESEL |
+            LVS_SHOWSELALWAYS | WS_BORDER,
+            10, 50, 865, 480,
+            hwnd_,
+            (HMENU)IDC_LISTVIEW,
+            hInst,
+            nullptr
+        );
+
+        // Set extended styles
+        ListView_SetExtendedListViewStyle(hListView_,
+            LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_DOUBLEBUFFER);
+
+        // Apply font
+        if (hFont_) {
+            SendMessage(hListView_, WM_SETFONT, (WPARAM)hFont_, TRUE);
         }
 
-        int btnWidth = 80;
-        int btnHeight = 30;
-        int btnY = height - 45;
-        int spacing = 10;
+        SetupListViewColumns();
 
-        if (btnClose_) {
-            SetWindowPos(btnClose_, nullptr, width - btnWidth - 10, btnY, btnWidth, btnHeight, SWP_NOZORDER);
+        // Add status label at bottom
+        CreateWindowW(L"STATIC", L"Tổng số: 0 tài khoản",
+            WS_CHILD | WS_VISIBLE,
+            10, 540, 300, 20, hwnd_, nullptr, hInst, nullptr);
+    }
+
+    void AccountForm::SetupListViewColumns() {
+        LVCOLUMNW lvc = { 0 };
+        lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+
+        // Mã TK
+        lvc.fmt = LVCFMT_LEFT;
+        lvc.pszText = const_cast<LPWSTR>(L"Mã TK");
+        lvc.cx = 120;
+        ListView_InsertColumn(hListView_, 0, &lvc);
+
+        // Tên tài khoản
+        lvc.pszText = const_cast<LPWSTR>(L"Tên tài khoản");
+        lvc.cx = 300;
+        ListView_InsertColumn(hListView_, 1, &lvc);
+
+        // Loại TK
+        lvc.pszText = const_cast<LPWSTR>(L"Loại TK");
+        lvc.cx = 150;
+        ListView_InsertColumn(hListView_, 2, &lvc);
+
+        // Mô tả
+        lvc.pszText = const_cast<LPWSTR>(L"Mô tả");
+        lvc.cx = 280;
+        ListView_InsertColumn(hListView_, 3, &lvc);
+    }
+
+    void AccountForm::LoadAccounts() {
+        // Sample data
+        accounts_.clear();
+
+        Account a1;
+        a1.MaTK = L"111";
+        a1.TenTK = L"Tiền mặt";
+        a1.LoaiTK = L"Tài sản";
+        a1.MoTa = L"Tiền mặt tại quỹ";
+        accounts_.push_back(a1);
+
+        Account a2;
+        a2.MaTK = L"112";
+        a2.TenTK = L"Tiền gửi ngân hàng";
+        a2.LoaiTK = L"Tài sản";
+        a2.MoTa = L"Tiền gửi tại các ngân hàng";
+        accounts_.push_back(a2);
+
+        Account a3;
+        a3.MaTK = L"331";
+        a3.TenTK = L"Phải trả người bán";
+        a3.LoaiTK = L"Nợ phải trả";
+        a3.MoTa = L"Công nợ phải trả nhà cung cấp";
+        accounts_.push_back(a3);
+
+        Account a4;
+        a4.MaTK = L"511";
+        a4.TenTK = L"Doanh thu bán hàng";
+        a4.LoaiTK = L"Doanh thu";
+        a4.MoTa = L"Doanh thu từ bán hàng hóa, dịch vụ";
+        accounts_.push_back(a4);
+
+        Logger::Info("Loaded %zu accounts", accounts_.size());
+    }
+
+    void AccountForm::RefreshListView() {
+        ListView_DeleteAllItems(hListView_);
+
+        for (size_t i = 0; i < accounts_.size(); i++) {
+            const Account& a = accounts_[i];
+
+            LVITEMW lvi = { 0 };
+            lvi.mask = LVIF_TEXT;
+            lvi.iItem = static_cast<int>(i);
+
+            // Mã TK
+            lvi.iSubItem = 0;
+            lvi.pszText = const_cast<LPWSTR>(a.MaTK.c_str());
+            ListView_InsertItem(hListView_, &lvi);
+
+            // Tên tài khoản
+            lvi.iSubItem = 1;
+            lvi.pszText = const_cast<LPWSTR>(a.TenTK.c_str());
+            ListView_SetItem(hListView_, &lvi);
+
+            // Loại TK
+            lvi.iSubItem = 2;
+            lvi.pszText = const_cast<LPWSTR>(a.LoaiTK.c_str());
+            ListView_SetItem(hListView_, &lvi);
+
+            // Mô tả
+            lvi.iSubItem = 3;
+            lvi.pszText = const_cast<LPWSTR>(a.MoTa.c_str());
+            ListView_SetItem(hListView_, &lvi);
         }
-        if (btnDelete_) {
-            SetWindowPos(btnDelete_, nullptr, width - (btnWidth * 2) - spacing - 10, btnY, btnWidth, btnHeight, SWP_NOZORDER);
-        }
-        if (btnEdit_) {
-            SetWindowPos(btnEdit_, nullptr, width - (btnWidth * 3) - (spacing * 2) - 10, btnY, btnWidth, btnHeight, SWP_NOZORDER);
-        }
-        if (btnAdd_) {
-            SetWindowPos(btnAdd_, nullptr, width - (btnWidth * 4) - (spacing * 3) - 10, btnY, btnWidth, btnHeight, SWP_NOZORDER);
-        }
+    }
+
+    void AccountForm::ClearListView() {
+        ListView_DeleteAllItems(hListView_);
     }
 
     void AccountForm::OnCommand(WPARAM wParam, LPARAM lParam) {
         KETOAN_UNUSED(lParam);
 
-        switch (LOWORD(wParam)) {
-            case ID_BTN_ADD:
+        int wmId = LOWORD(wParam);
+
+        switch (wmId) {
+            case IDC_BTN_THEM:
                 MessageBoxW(hwnd_, L"Chức năng thêm tài khoản đang phát triển", L"Thông báo", MB_OK | MB_ICONINFORMATION);
                 break;
-            case ID_BTN_EDIT:
+
+            case IDC_BTN_SUA:
                 MessageBoxW(hwnd_, L"Chức năng sửa tài khoản đang phát triển", L"Thông báo", MB_OK | MB_ICONINFORMATION);
                 break;
-            case ID_BTN_DELETE:
-                if (MessageBoxW(hwnd_, L"Bạn có chắc muốn xóa tài khoản này?", L"Xác nhận", MB_YESNO | MB_ICONQUESTION) == IDYES) {
-                    MessageBoxW(hwnd_, L"Đã xóa tài khoản", L"Thông báo", MB_OK | MB_ICONINFORMATION);
+
+            case IDC_BTN_XOA:
+                if (selectedIndex_ >= 0) {
+                    const Account& a = accounts_[selectedIndex_];
+                    std::wstring msg = L"Bạn có chắc muốn xóa tài khoản \"" + a.TenTK + L"\"?";
+
+                    int result = MessageBoxW(hwnd_, msg.c_str(), L"Xác nhận xóa", MB_YESNO | MB_ICONQUESTION);
+                    if (result == IDYES) {
+                        accounts_.erase(accounts_.begin() + selectedIndex_);
+                        selectedIndex_ = -1;
+                        RefreshListView();
+                        MessageBoxW(hwnd_, L"Đã xóa tài khoản thành công!", L"Thông báo", MB_OK | MB_ICONINFORMATION);
+                    }
+                } else {
+                    MessageBoxW(hwnd_, L"Vui lòng chọn tài khoản cần xóa!", L"Thông báo", MB_OK | MB_ICONWARNING);
                 }
                 break;
-            case ID_BTN_CLOSE:
+
+            case IDC_BTN_DONG:
                 DestroyWindow(hwnd_);
+                break;
+
+            case IDCANCEL:
+                OnClose();
                 break;
         }
     }
 
-    void AccountForm::OnNotify(NMHDR* nmhdr) {
-        KETOAN_UNUSED(nmhdr);
+    void AccountForm::OnNotify(LPARAM lParam) {
+        LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lParam);
+
+        if (nmhdr->hwndFrom == hListView_) {
+            if (nmhdr->code == LVN_ITEMCHANGED) {
+                LPNMLISTVIEW pnmv = reinterpret_cast<LPNMLISTVIEW>(lParam);
+                if (pnmv->uNewState & LVIS_SELECTED) {
+                    selectedIndex_ = pnmv->iItem;
+                }
+            }
+        }
     }
 
-    void AccountForm::InitializeControls() {
-        HINSTANCE hInstance = GetModuleHandle(nullptr);
-
-        // ListView
-        listView_ = CreateWindowExW(
-            WS_EX_CLIENTEDGE,
-            WC_LISTVIEW,
-            L"",
-            WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SINGLESEL,
-            10, 10, 860, 380,
-            hwnd_,
-            reinterpret_cast<HMENU>(ID_LISTVIEW),
-            hInstance,
-            nullptr
-        );
-
-        ListView_SetExtendedListViewStyle(listView_, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
-        InitializeListView();
-
-        // Buttons
-        btnAdd_ = CreateWindowW(
-            L"BUTTON", L"Thêm",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            10, 400, 80, 30,
-            hwnd_, reinterpret_cast<HMENU>(ID_BTN_ADD), hInstance, nullptr
-        );
-
-        btnEdit_ = CreateWindowW(
-            L"BUTTON", L"Sửa",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            100, 400, 80, 30,
-            hwnd_, reinterpret_cast<HMENU>(ID_BTN_EDIT), hInstance, nullptr
-        );
-
-        btnDelete_ = CreateWindowW(
-            L"BUTTON", L"Xóa",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            190, 400, 80, 30,
-            hwnd_, reinterpret_cast<HMENU>(ID_BTN_DELETE), hInstance, nullptr
-        );
-
-        btnClose_ = CreateWindowW(
-            L"BUTTON", L"Đóng",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            280, 400, 80, 30,
-            hwnd_, reinterpret_cast<HMENU>(ID_BTN_CLOSE), hInstance, nullptr
-        );
+    void AccountForm::OnSize(WPARAM wParam, LPARAM lParam) {
+        KETOAN_UNUSED(wParam);
+        KETOAN_UNUSED(lParam);
+        // Size handling if needed in future
     }
 
-    void AccountForm::InitializeListView() {
-        LVCOLUMNW col = {};
-        col.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
-        col.fmt = LVCFMT_LEFT;
-
-        col.pszText = const_cast<LPWSTR>(L"Số TK");
-        col.cx = 100;
-        ListView_InsertColumn(listView_, 0, &col);
-
-        col.pszText = const_cast<LPWSTR>(L"Tên tài khoản");
-        col.cx = 250;
-        ListView_InsertColumn(listView_, 1, &col);
-
-        col.pszText = const_cast<LPWSTR>(L"Loại TK");
-        col.cx = 150;
-        ListView_InsertColumn(listView_, 2, &col);
-
-        col.pszText = const_cast<LPWSTR>(L"Diễn giải");
-        col.cx = 340;
-        ListView_InsertColumn(listView_, 3, &col);
-    }
-
-    void AccountForm::LoadAccounts() {
-        // Sample data - Danh mục tài khoản kế toán theo hệ thống Việt Nam
-        AddAccountToList(0, L"111", L"Tiền mặt", L"Tài sản", L"Tiền Việt Nam, ngoại tệ");
-        AddAccountToList(1, L"112", L"Tiền gửi ngân hàng", L"Tài sản", L"Tiền gửi các tài khoản ngân hàng");
-        AddAccountToList(2, L"131", L"Phải thu khách hàng", L"Tài sản", L"Các khoản phải thu của khách hàng");
-        AddAccountToList(3, L"152", L"Nguyên liệu, vật liệu", L"Tài sản", L"Nguyên vật liệu tồn kho");
-        AddAccountToList(4, L"156", L"Hàng hóa", L"Tài sản", L"Hàng hóa tồn kho");
-        AddAccountToList(5, L"331", L"Phải trả người bán", L"Nợ phải trả", L"Các khoản phải trả nhà cung cấp");
-        AddAccountToList(6, L"511", L"Doanh thu bán hàng", L"Doanh thu", L"Doanh thu từ bán hàng hóa");
-        AddAccountToList(7, L"632", L"Giá vốn hàng bán", L"Chi phí", L"Giá vốn của hàng hóa đã bán");
-    }
-
-    void AccountForm::AddAccountToList(int index, const std::wstring& code, const std::wstring& name,
-                                       const std::wstring& type, const std::wstring& description) {
-        LVITEMW item = {};
-        item.mask = LVIF_TEXT;
-        item.iItem = index;
-
-        item.iSubItem = 0;
-        item.pszText = const_cast<LPWSTR>(code.c_str());
-        ListView_InsertItem(listView_, &item);
-
-        ListView_SetItemText(listView_, index, 1, const_cast<LPWSTR>(name.c_str()));
-        ListView_SetItemText(listView_, index, 2, const_cast<LPWSTR>(type.c_str()));
-        ListView_SetItemText(listView_, index, 3, const_cast<LPWSTR>(description.c_str()));
+    void AccountForm::OnClose() {
+        DestroyWindow(hwnd_);
     }
 
 } // namespace KeToanApp

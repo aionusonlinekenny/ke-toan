@@ -1,55 +1,77 @@
 #pragma once
 
 #include "KeToanApp/Common.h"
-#include <windows.h>
-#include <string>
 #include <vector>
+#include <string>
 
 namespace KeToanApp {
 
-    /**
-     * Form quản lý danh mục nhóm sản phẩm
-     */
+    // ProductGroup data structure
+    struct ProductGroup {
+        std::wstring MaNhom;     // Group code
+        std::wstring TenNhom;    // Group name
+        std::wstring MoTa;       // Description
+
+        ProductGroup() = default;
+    };
+
     class ProductGroupForm {
     public:
-        explicit ProductGroupForm(HWND parent);
+        explicit ProductGroupForm(HWND hParent);
         ~ProductGroupForm();
 
         bool Create();
         void Show();
-
-        // Prevent copying
-        ProductGroupForm(const ProductGroupForm&) = delete;
-        ProductGroupForm& operator=(const ProductGroupForm&) = delete;
+        void Close();
 
     private:
-        static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-        void OnCreate();
-        void OnDestroy();
-        void OnSize(int width, int height);
-        void OnCommand(WPARAM wParam, LPARAM lParam);
-        void OnNotify(NMHDR* nmhdr);
-
-        void InitializeControls();
-        void InitializeListView();
-        void LoadProductGroups();
-        void AddProductGroupToList(int index, const std::wstring& code, const std::wstring& name,
-                                   const std::wstring& description);
-
-        HWND parent_;
+        HINSTANCE hInstance_;
+        HWND hParent_;
         HWND hwnd_;
-        HWND listView_;
-        HWND btnAdd_;
-        HWND btnEdit_;
-        HWND btnDelete_;
-        HWND btnClose_;
+        HFONT hFont_;
 
-        static constexpr int ID_LISTVIEW = 1001;
-        static constexpr int ID_BTN_ADD = 1002;
-        static constexpr int ID_BTN_EDIT = 1003;
-        static constexpr int ID_BTN_DELETE = 1004;
-        static constexpr int ID_BTN_CLOSE = 1005;
+        static const wchar_t* CLASS_NAME;
+
+        // Controls
+        HWND hListView_;
+        HWND hBtnThem_;
+        HWND hBtnSua_;
+        HWND hBtnXoa_;
+        HWND hBtnDong_;
+
+        // Data
+        std::vector<ProductGroup> productGroups_;
+        int selectedIndex_;
+
+        // Window procedure
+        static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+        LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+        // Message handlers
+        void OnCreate();
+        void OnCommand(WPARAM wParam, LPARAM lParam);
+        void OnNotify(LPARAM lParam);
+        void OnSize(WPARAM wParam, LPARAM lParam);
+        void OnClose();
+
+        // UI creation
+        void CreateControls();
+        void CreateListView();
+        void SetupListViewColumns();
+
+        // Data management
+        void LoadProductGroups();
+        void RefreshListView();
+        void ClearListView();
+
+        // Control IDs
+        enum {
+            IDC_LISTVIEW = 1001,
+            IDC_BTN_THEM = 1002,
+            IDC_BTN_SUA = 1003,
+            IDC_BTN_XOA = 1004,
+            IDC_BTN_DONG = 1005
+        };
     };
 
 } // namespace KeToanApp
