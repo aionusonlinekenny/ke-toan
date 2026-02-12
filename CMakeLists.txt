@@ -32,6 +32,7 @@ set(DATABASE_SOURCES
 
 set(UI_SOURCES
     KeToanApp/src/UI/MainWindow.cpp
+    KeToanApp/src/UI/Windows/ProductForm.cpp
 )
 
 set(UTILS_SOURCES
@@ -49,6 +50,7 @@ set(HEADERS
     KeToanApp/src/Database/DatabaseManager.h
     KeToanApp/src/Database/Connection.h
     KeToanApp/src/UI/MainWindow.h
+    KeToanApp/src/UI/Windows/ProductForm.h
     KeToanApp/src/Utils/Logger.h
 )
 

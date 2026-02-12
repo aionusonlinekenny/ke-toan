@@ -2,6 +2,7 @@
 #pragma execution_character_set("utf-8")
 
 #include "MainWindow.h"
+#include "Windows/ProductForm.h"
 #include "../Utils/Logger.h"
 
 namespace KeToanApp {
@@ -204,7 +205,15 @@ namespace KeToanApp {
                 break;
 
             case ID_KHO_SANPHAM:
-                MessageBoxW(hwnd_, L"Quản lý sản phẩm", L"Thông báo", MB_OK);
+                {
+                    ProductForm* form = new ProductForm(hwnd_);
+                    if (form->Create()) {
+                        form->Show();
+                    } else {
+                        MessageBoxW(hwnd_, L"Không thể mở form Sản phẩm", L"Lỗi", MB_OK | MB_ICONERROR);
+                        delete form;
+                    }
+                }
                 break;
 
             case ID_KHO_NHAP:

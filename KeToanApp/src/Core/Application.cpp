@@ -84,12 +84,13 @@ namespace KeToanApp {
 
         Logger::Info("Shutting down application...");
 
+        // Save configuration FIRST, before closing resources
+        // This prevents file handle conflicts with logger
+        config_.Save();
+
         // Cleanup in reverse order
         mainWindow_.reset();
         database_.reset();
-
-        // Save configuration
-        config_.Save();
 
         initialized_ = false;
         Logger::Info("Application shutdown complete");
