@@ -1,3 +1,6 @@
+// Force UTF-8 encoding for Vietnamese text
+#pragma execution_character_set("utf-8")
+
 #include "MainWindow.h"
 #include "../Utils/Logger.h"
 

@@ -75,7 +75,10 @@ endif()
 
 # Compiler warnings
 if(MSVC)
-    target_compile_options(KeToanApp PRIVATE /W4)
+    target_compile_options(KeToanApp PRIVATE
+        /W4
+        /utf-8  # Force UTF-8 source and execution character sets
+    )
 else()
     target_compile_options(KeToanApp PRIVATE -Wall -Wextra -Wpedantic)
 endif()
