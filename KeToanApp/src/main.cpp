@@ -3,6 +3,7 @@
 #include "Utils/Logger.h"
 #include <exception>
 #include <system_error>
+#include <iostream>
 
 // Windows entry point
 int WINAPI WinMain(
@@ -17,10 +18,13 @@ int WINAPI WinMain(
     try {
         // Allocate console for debugging
         #ifdef _DEBUG
-        AllocConsole();
-        FILE* pConsole;
-        freopen_s(&pConsole, "CONOUT$", "w", stdout);
-        freopen_s(&pConsole, "CONOUT$", "w", stderr);
+        if (AllocConsole()) {
+            FILE* pConsole = nullptr;
+            freopen_s(&pConsole, "CONOUT$", "w", stdout);
+            freopen_s(&pConsole, "CONOUT$", "w", stderr);
+            SetConsoleTitleW(L"KeToan Debug Console");
+            std::cout << "Debug console initialized" << std::endl;
+        }
         #endif
 
         // Initialize logger
@@ -32,11 +36,26 @@ int WINAPI WinMain(
             KETOANAPP_VERSION_MINOR,
             KETOANAPP_VERSION_PATCH);
 
+        #ifdef _DEBUG
+        std::cout << "Creating application..." << std::endl;
+        #endif
+
         // Create and run application
         KeToanApp::Application app(hInstance);
 
+        #ifdef _DEBUG
+        std::cout << "Initializing application..." << std::endl;
+        #endif
+
         if (!app.Initialize()) {
             KeToanApp::Logger::Error("Failed to initialize application");
+
+            #ifdef _DEBUG
+            std::cerr << "ERROR: Application initialization failed!" << std::endl;
+            std::cout << "Press any key to exit..." << std::endl;
+            std::cin.get();
+            #endif
+
             MessageBoxW(nullptr,
                 L"Không thể khởi động ứng dụng. Vui lòng kiểm tra log file.",
                 L"Lỗi Khởi Động",
@@ -61,6 +80,12 @@ int WINAPI WinMain(
     catch (const std::system_error& e) {
         KeToanApp::Logger::Error("System error [%d]: %s", e.code().value(), e.what());
 
+        #ifdef _DEBUG
+        std::cerr << "SYSTEM ERROR [" << e.code().value() << "]: " << e.what() << std::endl;
+        std::cout << "Press any key to exit..." << std::endl;
+        std::cin.get();
+        #endif
+
         std::wstring errorMsg = L"Lỗi hệ thống:\n";
         int wideSize = MultiByteToWideChar(CP_UTF8, 0, e.what(), -1, nullptr, 0);
         if (wideSize > 0) {
@@ -75,6 +100,12 @@ int WINAPI WinMain(
     catch (const std::exception& e) {
         KeToanApp::Logger::Error("Unhandled exception: %s", e.what());
 
+        #ifdef _DEBUG
+        std::cerr << "EXCEPTION: " << e.what() << std::endl;
+        std::cout << "Press any key to exit..." << std::endl;
+        std::cin.get();
+        #endif
+
         std::wstring errorMsg = L"Lỗi nghiêm trọng:\n";
         int wideSize = MultiByteToWideChar(CP_UTF8, 0, e.what(), -1, nullptr, 0);
         if (wideSize > 0) {
@@ -88,6 +119,13 @@ int WINAPI WinMain(
     }
     catch (...) {
         KeToanApp::Logger::Error("Unknown exception occurred");
+
+        #ifdef _DEBUG
+        std::cerr << "UNKNOWN EXCEPTION!" << std::endl;
+        std::cout << "Press any key to exit..." << std::endl;
+        std::cin.get();
+        #endif
+
         MessageBoxW(nullptr,
             L"Đã xảy ra lỗi không xác định.",
             L"Lỗi",
