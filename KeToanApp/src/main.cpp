@@ -69,21 +69,25 @@ int WINAPI WinMain(
         int exitCode = app.Run(nCmdShow);
 
         KeToanApp::Logger::Info("Application exiting with code: %d", exitCode);
+
+        #ifdef _DEBUG
+        std::cout << "About to shutdown logger..." << std::endl;
+        FreeConsole();
+        #endif
+
+        // Shutdown logger last, after all other cleanup
         KeToanApp::Logger::Shutdown();
 
         #ifdef _DEBUG
-        FreeConsole();
+        std::cout << "Logger shutdown complete, exiting normally" << std::endl;
         #endif
 
         return exitCode;
     }
     catch (const std::system_error& e) {
-        KeToanApp::Logger::Error("System error [%d]: %s", e.code().value(), e.what());
-
+        // Don't log here if logger might be shut down already
         #ifdef _DEBUG
         std::cerr << "SYSTEM ERROR [" << e.code().value() << "]: " << e.what() << std::endl;
-        std::cout << "Press any key to exit..." << std::endl;
-        std::cin.get();
         #endif
 
         std::wstring errorMsg = L"Lỗi hệ thống:\n";
@@ -98,12 +102,9 @@ int WINAPI WinMain(
         return 1;
     }
     catch (const std::exception& e) {
-        KeToanApp::Logger::Error("Unhandled exception: %s", e.what());
-
+        // Don't log here if logger might be shut down already
         #ifdef _DEBUG
         std::cerr << "EXCEPTION: " << e.what() << std::endl;
-        std::cout << "Press any key to exit..." << std::endl;
-        std::cin.get();
         #endif
 
         std::wstring errorMsg = L"Lỗi nghiêm trọng:\n";
@@ -118,12 +119,9 @@ int WINAPI WinMain(
         return 1;
     }
     catch (...) {
-        KeToanApp::Logger::Error("Unknown exception occurred");
-
+        // Don't log here if logger might be shut down already
         #ifdef _DEBUG
         std::cerr << "UNKNOWN EXCEPTION!" << std::endl;
-        std::cout << "Press any key to exit..." << std::endl;
-        std::cin.get();
         #endif
 
         MessageBoxW(nullptr,
