@@ -98,7 +98,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)KeToanApp\include;$(ProjectDir)KeToanApp\src;$(ProjectDir)lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/permissive- /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /permissive- /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -117,7 +117,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)KeToanApp\include;$(ProjectDir)KeToanApp\src;$(ProjectDir)lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/permissive- /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /permissive- /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -136,7 +136,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)KeToanApp\include;$(ProjectDir)KeToanApp\src;$(ProjectDir)lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/permissive- /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /permissive- /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -155,7 +155,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)KeToanApp\include;$(ProjectDir)KeToanApp\src;$(ProjectDir)lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/permissive- /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 /permissive- /Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -172,8 +172,12 @@
     <ClCompile Include="KeToanApp\src\Core\Config.cpp" />
     <ClCompile Include="KeToanApp\src\Database\DatabaseManager.cpp" />
     <ClCompile Include="KeToanApp\src\Database\Connection.cpp" />
+    <ClCompile Include="KeToanApp\src\Database\QueryBuilder.cpp" />
     <ClCompile Include="KeToanApp\src\UI\MainWindow.cpp" />
+    <ClCompile Include="KeToanApp\src\UI\Windows\ProductForm.cpp" />
     <ClCompile Include="KeToanApp\src\Utils\Logger.cpp" />
+    <ClCompile Include="KeToanApp\src\Utils\StringHelper.cpp" />
+    <ClCompile Include="KeToanApp\src\Utils\DateTimeHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KeToanApp\include\KeToanApp\Common.h" />
@@ -182,8 +186,12 @@
     <ClInclude Include="KeToanApp\src\Core\Config.h" />
     <ClInclude Include="KeToanApp\src\Database\DatabaseManager.h" />
     <ClInclude Include="KeToanApp\src\Database\Connection.h" />
+    <ClInclude Include="KeToanApp\src\Database\QueryBuilder.h" />
     <ClInclude Include="KeToanApp\src\UI\MainWindow.h" />
+    <ClInclude Include="KeToanApp\src\UI\Windows\ProductForm.h" />
     <ClInclude Include="KeToanApp\src\Utils\Logger.h" />
+    <ClInclude Include="KeToanApp\src\Utils\StringHelper.h" />
+    <ClInclude Include="KeToanApp\src\Utils\DateTimeHelper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
