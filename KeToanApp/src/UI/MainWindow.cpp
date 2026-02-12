@@ -31,8 +31,13 @@ namespace KeToanApp {
         wc.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
 
         if (!RegisterClassExW(&wc)) {
-            Logger::Error("Failed to register window class");
-            return false;
+            DWORD err = GetLastError();
+            // ERROR_CLASS_ALREADY_EXISTS (1410) is OK - class was registered before
+            if (err != ERROR_CLASS_ALREADY_EXISTS) {
+                Logger::Error("Failed to register window class, error: %d", err);
+                return false;
+            }
+            Logger::Debug("Window class already registered (OK)");
         }
 
         // Create window
@@ -50,7 +55,8 @@ namespace KeToanApp {
         );
 
         if (!hwnd_) {
-            Logger::Error("Failed to create window");
+            DWORD err = GetLastError();
+            Logger::Error("Failed to create window, error: %d", err);
             return false;
         }
 
@@ -261,12 +267,15 @@ namespace KeToanApp {
         );
 
         if (!hStatusBar_) {
+            DWORD err = GetLastError();
+            Logger::Error("Failed to create status bar, error: %d", err);
             return false;
         }
 
         // Set status bar text
         SendMessageW(hStatusBar_, SB_SETTEXTW, 0, (LPARAM)L"Sẵn sàng");
 
+        Logger::Debug("Status bar created successfully");
         return true;
     }
 
