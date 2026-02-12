@@ -175,6 +175,11 @@
     <ClCompile Include="KeToanApp\src\Database\QueryBuilder.cpp" />
     <ClCompile Include="KeToanApp\src\UI\MainWindow.cpp" />
     <ClCompile Include="KeToanApp\src\UI\Windows\ProductForm.cpp" />
+    <ClCompile Include="KeToanApp\src\UI\Windows\CustomerForm.cpp" />
+    <ClCompile Include="KeToanApp\src\UI\Windows\SupplierForm.cpp" />
+    <ClCompile Include="KeToanApp\src\UI\Windows\WarehouseForm.cpp" />
+    <ClCompile Include="KeToanApp\src\UI\Windows\AccountForm.cpp" />
+    <ClCompile Include="KeToanApp\src\UI\Windows\ProductGroupForm.cpp" />
     <ClCompile Include="KeToanApp\src\Utils\Logger.cpp" />
     <ClCompile Include="KeToanApp\src\Utils\StringHelper.cpp" />
     <ClCompile Include="KeToanApp\src\Utils\DateTimeHelper.cpp" />
@@ -189,6 +194,11 @@
     <ClInclude Include="KeToanApp\src\Database\QueryBuilder.h" />
     <ClInclude Include="KeToanApp\src\UI\MainWindow.h" />
     <ClInclude Include="KeToanApp\src\UI\Windows\ProductForm.h" />
+    <ClInclude Include="KeToanApp\src\UI\Windows\CustomerForm.h" />
+    <ClInclude Include="KeToanApp\src\UI\Windows\SupplierForm.h" />
+    <ClInclude Include="KeToanApp\src\UI\Windows\WarehouseForm.h" />
+    <ClInclude Include="KeToanApp\src\UI\Windows\AccountForm.h" />
+    <ClInclude Include="KeToanApp\src\UI\Windows\ProductGroupForm.h" />
     <ClInclude Include="KeToanApp\src\Utils\Logger.h" />
     <ClInclude Include="KeToanApp\src\Utils\StringHelper.h" />
     <ClInclude Include="KeToanApp\src\Utils\DateTimeHelper.h" />

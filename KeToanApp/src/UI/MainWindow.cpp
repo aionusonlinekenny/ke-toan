@@ -3,6 +3,11 @@
 
 #include "MainWindow.h"
 #include "Windows/ProductForm.h"
+#include "Windows/CustomerForm.h"
+#include "Windows/SupplierForm.h"
+#include "Windows/WarehouseForm.h"
+#include "Windows/AccountForm.h"
+#include "Windows/ProductGroupForm.h"
 #include "../Utils/Logger.h"
 
 namespace KeToanApp {
@@ -217,6 +222,54 @@ namespace KeToanApp {
                 }
                 break;
 
+            case ID_KHO_KHACHHANG:
+                {
+                    CustomerForm* form = new CustomerForm(hwnd_);
+                    if (form->Create()) {
+                        form->Show();
+                    } else {
+                        MessageBoxW(hwnd_, L"Không thể mở form Khách hàng", L"Lỗi", MB_OK | MB_ICONERROR);
+                        delete form;
+                    }
+                }
+                break;
+
+            case ID_KHO_NHACUNGCAP:
+                {
+                    SupplierForm* form = new SupplierForm(hwnd_);
+                    if (form->Create()) {
+                        form->Show();
+                    } else {
+                        MessageBoxW(hwnd_, L"Không thể mở form Nhà cung cấp", L"Lỗi", MB_OK | MB_ICONERROR);
+                        delete form;
+                    }
+                }
+                break;
+
+            case ID_KHO_KHO:
+                {
+                    WarehouseForm* form = new WarehouseForm(hwnd_);
+                    if (form->Create()) {
+                        form->Show();
+                    } else {
+                        MessageBoxW(hwnd_, L"Không thể mở form Kho", L"Lỗi", MB_OK | MB_ICONERROR);
+                        delete form;
+                    }
+                }
+                break;
+
+            case ID_KHO_NHOMSANPHAM:
+                {
+                    ProductGroupForm* form = new ProductGroupForm(hwnd_);
+                    if (form->Create()) {
+                        form->Show();
+                    } else {
+                        MessageBoxW(hwnd_, L"Không thể mở form Nhóm sản phẩm", L"Lỗi", MB_OK | MB_ICONERROR);
+                        delete form;
+                    }
+                }
+                break;
+
             case ID_KHO_NHAP:
                 MessageBoxW(hwnd_, L"Nhập kho", L"Thông báo", MB_OK);
                 break;
@@ -226,7 +279,15 @@ namespace KeToanApp {
                 break;
 
             case ID_KETOAN_TAIKHOAN:
-                MessageBoxW(hwnd_, L"Quản lý tài khoản", L"Thông báo", MB_OK);
+                {
+                    AccountForm* form = new AccountForm(hwnd_);
+                    if (form->Create()) {
+                        form->Show();
+                    } else {
+                        MessageBoxW(hwnd_, L"Không thể mở form Tài khoản", L"Lỗi", MB_OK | MB_ICONERROR);
+                        delete form;
+                    }
+                }
                 break;
 
             case ID_KETOAN_CHUNGTU:
@@ -262,6 +323,11 @@ namespace KeToanApp {
         // Kho menu
         HMENU hKhoMenu = CreatePopupMenu();
         AppendMenuW(hKhoMenu, MF_STRING, ID_KHO_SANPHAM, L"Danh mục &Sản phẩm");
+        AppendMenuW(hKhoMenu, MF_STRING, ID_KHO_NHOMSANPHAM, L"Danh mục &Nhóm sản phẩm");
+        AppendMenuW(hKhoMenu, MF_STRING, ID_KHO_KHACHHANG, L"Danh mục &Khách hàng");
+        AppendMenuW(hKhoMenu, MF_STRING, ID_KHO_NHACUNGCAP, L"Danh mục Nhà &cung cấp");
+        AppendMenuW(hKhoMenu, MF_STRING, ID_KHO_KHO, L"Danh mục K&ho");
+        AppendMenuW(hKhoMenu, MF_SEPARATOR, 0, nullptr);
         AppendMenuW(hKhoMenu, MF_STRING, ID_KHO_NHAP, L"&Nhập kho");
         AppendMenuW(hKhoMenu, MF_STRING, ID_KHO_XUAT, L"&Xuất kho");
         AppendMenuW(hKhoMenu, MF_STRING, ID_KHO_TONKHO, L"&Tồn kho");

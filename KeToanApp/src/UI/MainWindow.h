@@ -50,9 +50,13 @@ namespace KeToanApp {
             ID_FILE_EXIT = 1004,
 
             ID_KHO_SANPHAM = 2001,
-            ID_KHO_NHAP = 2002,
-            ID_KHO_XUAT = 2003,
-            ID_KHO_TONKHO = 2004,
+            ID_KHO_KHACHHANG = 2002,
+            ID_KHO_NHACUNGCAP = 2003,
+            ID_KHO_KHO = 2004,
+            ID_KHO_NHOMSANPHAM = 2005,
+            ID_KHO_NHAP = 2006,
+            ID_KHO_XUAT = 2007,
+            ID_KHO_TONKHO = 2008,
 
             ID_KETOAN_TAIKHOAN = 3001,
             ID_KETOAN_CHUNGTU = 3002,

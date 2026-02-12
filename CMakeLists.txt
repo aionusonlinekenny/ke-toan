@@ -33,6 +33,11 @@ set(DATABASE_SOURCES
 set(UI_SOURCES
     KeToanApp/src/UI/MainWindow.cpp
     KeToanApp/src/UI/Windows/ProductForm.cpp
+    KeToanApp/src/UI/Windows/CustomerForm.cpp
+    KeToanApp/src/UI/Windows/SupplierForm.cpp
+    KeToanApp/src/UI/Windows/WarehouseForm.cpp
+    KeToanApp/src/UI/Windows/AccountForm.cpp
+    KeToanApp/src/UI/Windows/ProductGroupForm.cpp
 )
 
 set(UTILS_SOURCES
@@ -51,6 +56,11 @@ set(HEADERS
     KeToanApp/src/Database/Connection.h
     KeToanApp/src/UI/MainWindow.h
     KeToanApp/src/UI/Windows/ProductForm.h
+    KeToanApp/src/UI/Windows/CustomerForm.h
+    KeToanApp/src/UI/Windows/SupplierForm.h
+    KeToanApp/src/UI/Windows/WarehouseForm.h
+    KeToanApp/src/UI/Windows/AccountForm.h
+    KeToanApp/src/UI/Windows/ProductGroupForm.h
     KeToanApp/src/Utils/Logger.h
 )
 
