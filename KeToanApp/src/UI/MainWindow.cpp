@@ -190,6 +190,7 @@ namespace KeToanApp {
         HDC hdc = BeginPaint(hwnd_, &ps);
 
         // TODO: Custom painting
+        KETOAN_UNUSED(hdc);
 
         EndPaint(hwnd_, &ps);
     }
