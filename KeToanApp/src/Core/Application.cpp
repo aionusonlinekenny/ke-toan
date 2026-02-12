@@ -89,8 +89,13 @@ namespace KeToanApp {
         config_.Save();
 
         // Cleanup in reverse order
-        mainWindow_.reset();
-        database_.reset();
+        if (mainWindow_) {
+            mainWindow_.reset();
+        }
+
+        if (database_) {
+            database_.reset();
+        }
 
         initialized_ = false;
         Logger::Info("Application shutdown complete");
