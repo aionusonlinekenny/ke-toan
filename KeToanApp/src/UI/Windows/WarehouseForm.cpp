@@ -91,10 +91,10 @@ namespace KeToanApp {
         InitializeControls();
         LoadWarehouses();
 
-        // Force initial layout
-        RECT rect;
-        GetClientRect(hwnd_, &rect);
-        OnSize(rect.right - rect.left, rect.bottom - rect.top);
+        // Force initial layout - temporarily commented due to VS build issue
+        // RECT rect;
+        // GetClientRect(hwnd_, &rect);
+        // OnSize(rect.right - rect.left, rect.bottom - rect.top);
     }
 
     void WarehouseForm::OnDestroy() {
