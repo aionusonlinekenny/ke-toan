@@ -96,18 +96,21 @@ namespace KeToanApp {
             CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
             window = reinterpret_cast<MainWindow*>(pCreate->lpCreateParams);
             SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
+
+            // Store hwnd early so it's available during window creation messages
+            window->hwnd_ = hwnd;
         } else {
             window = reinterpret_cast<MainWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
         }
 
         if (window) {
-            return window->HandleMessage(msg, wParam, lParam);
+            return window->HandleMessage(hwnd, msg, wParam, lParam);
         }
 
         return DefWindowProc(hwnd, msg, wParam, lParam);
     }
 
-    LRESULT MainWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    LRESULT MainWindow::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         switch (msg) {
             case WM_CREATE:
                 OnCreate();
@@ -130,7 +133,7 @@ namespace KeToanApp {
                 return 0;
 
             default:
-                return DefWindowProc(hwnd_, msg, wParam, lParam);
+                return DefWindowProc(hwnd, msg, wParam, lParam);
         }
     }
 

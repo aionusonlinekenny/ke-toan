@@ -27,7 +27,7 @@ namespace KeToanApp {
 
         // Window procedure
         static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-        LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+        LRESULT HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
         // Message handlers
         void OnCreate();
